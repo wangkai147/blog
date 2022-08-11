@@ -10,9 +10,9 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://你的ip:3306/blog?serverTimezone=Asia/Shanghai&allowMultiQueries=true
-    username: MYSQL用户名
-    password: MYSQL密码
+    url: jdbc:mysql://39.106.144.234:3306/myblog?serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: myblog
+    password: Ww30550891000.
     hikari:
       minimum-idle: 5
       # 空闲连接存活最大时间，默认600000（10分钟）
@@ -30,15 +30,15 @@ spring:
       connection-test-query: SELECT 1
   # redis配置
   redis:
-    host: 你的ip
+    host: 39.106.144.234
     port: 6379
-    password: Redis密码
+    password: Ww30550891000.
   # mq配置
   rabbitmq:
-    host: 你的ip
+    host: 39.106.144.234
     port: 5672
-    username: rabbitmq用户名
-    password: rabbitmq密码
+    username: guest
+    password: guest
     listener:
       simple:
         retry:
@@ -48,12 +48,12 @@ spring:
   # es配置 若搜索模式为mysql可删除
   elasticsearch:
     rest:
-      uris: 你的IP:9200
+      uris: 39.106.144.234:9200
   # 邮箱配置
   mail:
     host: smtp.qq.com
-    username: 邮箱用户名
-    password: 邮箱授权码
+    username: 2925285800@qq.com
+    password: jvxsokeomnttddcf
     default-encoding: UTF-8
     port: 587
     properties:
@@ -66,7 +66,7 @@ spring:
   servlet:
     multipart:
       max-file-size: 100MB
-      max-request-size:  100MB
+      max-request-size: 100MB
 
 # 配置MybatisPlus
 mybatis-plus:
@@ -82,18 +82,18 @@ search:
 
 # 上传模式 可选 oss或local  （http://和最后的/一定不能去！！！）
 upload:
-  mode: local
+  mode: oss
   local:
     # nginx映射本地文件路径，无域名则为 ip:83
-    url: http://你的文件上传子域名/
+    url: http://39.106.144.234:83/
     # 本地文件存储路径
     path: /usr/local/upload/
   oss:
-    url: http://Bucket域名/
-    endpoint: OSS配置endpoint
-    accessKeyId: OSS配置accessKeyId
-    accessKeySecret: OSS配置accessKeySecret
-    bucketName: OSS配置bucketName
+    url: https://wangkaiblog.oss-cn-beijing.aliyuncs.com/
+    endpoint: oss-cn-beijing.aliyuncs.com
+    accessKeyId: LTAI5tEBzsLGhN8UhhBbmUMX
+    accessKeySecret: uAoGhpsfneQPhVODy0wcthIOEIXcHf
+    bucketName: wangkaiblog
   cos:
     url: http://Bucket域名/
     secretId: cos的secretId
@@ -103,7 +103,7 @@ upload:
 
 # 网站前台域名（邮件通知用）
 website:
-  url: http://你的主域名或ip
+  url: http://39.106.144.234
 
 #第三方配置信息
 qq:
