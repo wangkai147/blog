@@ -10,12 +10,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 
@@ -29,25 +31,27 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
-    private AuthenticationEntryPointImpl authenticationEntryPoint;
+    private AuthenticationEntryPointImpl authenticationEntryPoint;//自定义未登录处理器：返回状态码
     @Autowired
-    private AccessDeniedHandlerImpl accessDeniedHandler;
+    private AuthenticationSuccessHandlerImpl authenticationSuccessHandler;//验证成功处理器(前后端分离)：生成token及响应状态码
     @Autowired
-    private AuthenticationSuccessHandlerImpl authenticationSuccessHandler;
+    private AuthenticationFailHandlerImpl authenticationFailHandler;//验证失败处理器(前后端分离)：返回状态码
     @Autowired
-    private AuthenticationFailHandlerImpl authenticationFailHandler;
+    private AccessDeniedHandlerImpl accessDeniedHandler;//自定义权限不足处理器：返回状态码
     @Autowired
-    private LogoutSuccessHandlerImpl logoutSuccessHandler;
-
-    @Bean
-    public FilterInvocationSecurityMetadataSource securityMetadataSource() {
-        return new FilterInvocationSecurityMetadataSourceImpl();
-    }
-
-    @Bean
-    public AccessDecisionManager accessDecisionManager() {
-        return new AccessDecisionManagerImpl();
-    }
+    private LogoutSuccessHandlerImpl logoutSuccessHandler;//自定义注销成功处理器：返回状态码
+    @Autowired
+    private AccessDecisionManager accessDecisionManager; //自定义权限判断管理器
+    @Autowired
+    private FilterInvocationSecurityMetadataSource securityMetadataSource;//动态获取url权限配置
+    @Autowired
+    private JwtAuthorizationTokenFilter authorizationTokenFilter; //JwtToken解析并生成authentication身份信息过滤器
+//    @Autowired
+//    private SelfAuthenticationProvider selfAuthenticationProvider;
+//    @Autowired
+//    public void configureGlobal(AuthenticationManagerBuilder auth) {
+//        auth.authenticationProvider(selfAuthenticationProvider);
+//    }
 
     @Bean
     public SessionRegistry sessionRegistry() {
@@ -77,37 +81,37 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // JwtToken解析并生成authentication身份信息过滤器
+        http.addFilterBefore(authorizationTokenFilter, UsernamePasswordAuthenticationFilter.class);
         // 配置登录注销路径
-        http.formLogin()
-                .loginProcessingUrl("/login")
-                .successHandler(authenticationSuccessHandler)
-                .failureHandler(authenticationFailHandler)
+        http.formLogin().loginProcessingUrl("/login")                        //自定义登录请求路径(post)
+                .usernameParameter("username").passwordParameter("password") //自定义登录用户名密码属性名,默认为username和password
+                .successHandler(authenticationSuccessHandler)                //登录成功
+                .failureHandler(authenticationFailHandler)                   //登陆失败
                 .and()
-                .logout()
-                .logoutUrl("/logout")
-                .logoutSuccessHandler(logoutSuccessHandler);
+                .logout().logoutUrl("/logout")                               //自定义注销路径
+                .logoutSuccessHandler(logoutSuccessHandler);                 //注销成功
         // 配置路由权限信息
         http.authorizeRequests()
                 .withObjectPostProcessor(new ObjectPostProcessor<FilterSecurityInterceptor>() {
                     @Override
                     public <O extends FilterSecurityInterceptor> O postProcess(O fsi) {
-                        fsi.setSecurityMetadataSource(securityMetadataSource());
-                        fsi.setAccessDecisionManager(accessDecisionManager());
+                        fsi.setSecurityMetadataSource(securityMetadataSource);
+                        fsi.setAccessDecisionManager(accessDecisionManager);
                         return fsi;
                     }
-                })
-                .anyRequest().permitAll()
+                }).anyRequest()
+                .permitAll()//指定任何人都允许使用URL。
+//                .authenticated()
                 .and()
-                // 关闭跨站请求防护
-                .csrf().disable().exceptionHandling()
-                // 未登录处理
-                .authenticationEntryPoint(authenticationEntryPoint)
-                // 权限不足处理
-                .accessDeniedHandler(accessDeniedHandler)
+                .csrf().disable()// 去掉 CSRF（跨域）
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 使用 JWT，关闭session
                 .and()
-                .sessionManagement()
-                .maximumSessions(20)
-                .sessionRegistry(sessionRegistry());
+                .exceptionHandling()// 关闭跨站请求防护
+                .authenticationEntryPoint(authenticationEntryPoint)                // 未登录处理
+                .accessDeniedHandler(accessDeniedHandler);                          // 权限不足处理
+//                .and()
+//                .sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry());
     }
 
 }
