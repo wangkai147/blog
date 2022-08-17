@@ -41,9 +41,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private LogoutSuccessHandlerImpl logoutSuccessHandler;//自定义注销成功处理器：返回状态码
     @Autowired
-    private AccessDecisionManager accessDecisionManager; //自定义权限判断管理器
+    private AccessDecisionManagerImpl accessDecisionManager; //自定义权限判断管理器
     @Autowired
-    private FilterInvocationSecurityMetadataSource securityMetadataSource;//动态获取url权限配置
+    private FilterInvocationSecurityMetadataSourceImpl securityMetadataSource;//动态获取url权限配置
     @Autowired
     private JwtAuthorizationTokenFilter authorizationTokenFilter; //JwtToken解析并生成authentication身份信息过滤器
 //    @Autowired
