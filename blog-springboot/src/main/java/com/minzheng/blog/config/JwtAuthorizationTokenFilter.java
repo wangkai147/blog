@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @author Andon
- * @date 2019/12/11
+ * @author wangkai
+ * @date 2022/08/17
  * <p>
  * JwtToken解析并生成authentication身份信息过滤器
  */
@@ -43,7 +43,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
         // 获取请求头传递过来的token数据
         String token = request.getHeader(tokenHeaderKey);
         log.info("JwtAuthorizationTokenFilterLog >> token:{}", token);
-        if (null == token || !token.startsWith(tokenPrefix + " ")) {
+        if (null == token || !token.startsWith(tokenPrefix + ":")) {
             //校验token，直接下一步过滤器，此时上线文中无用户信息，所有在后续认证环节失败
             chain.doFilter(request, response);
             return;
@@ -56,7 +56,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
 //        }
         Claims claims;
         try {
-            claims = Jwts.parser().setSigningKey(tokenSecret).parseClaimsJws(token.replace(tokenPrefix + " ", "")).getBody();
+            claims = Jwts.parser().setSigningKey(tokenSecret).parseClaimsJws(token.replace(tokenPrefix + ":", "")).getBody();
         } catch (Exception e) {
             chain.doFilter(request, response);
             return;

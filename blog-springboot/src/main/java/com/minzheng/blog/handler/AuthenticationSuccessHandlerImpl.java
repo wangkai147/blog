@@ -61,7 +61,7 @@ public class AuthenticationSuccessHandlerImpl implements AuthenticationSuccessHa
                 .setSubject(userLoginDTO.getUsername()) //设置用户名
                 .setExpiration(new Date(System.currentTimeMillis() + tokenExpiration)) //设置token过期时间
                 .signWith(SignatureAlgorithm.HS512, tokenSecret).compact(); //设置token签名算法及秘钥
-        httpServletResponse.addHeader(tokenHeaderKey, tokenPrefix + " " + token); //设置token响应头
+        httpServletResponse.addHeader(tokenHeaderKey, tokenPrefix + ":" + token); //设置token响应头
         httpServletResponse.setCharacterEncoding("UTF-8");
         httpServletResponse.setContentType(APPLICATION_JSON);
         httpServletResponse.getWriter().write(JSON.toJSONString(Result.ok(userLoginDTO)));
